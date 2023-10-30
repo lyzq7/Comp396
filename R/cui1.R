@@ -70,15 +70,25 @@ ggplot(data = df, aes(x = Index, y = PortfolioValue)) +
   geom_line() +
   labs(title = 'Portfolio Value Over Time', x = 'Date', y = 'Portfolio Value')
 
-# 绘制趋势跟踪策略的图表
-ggplot(data = df, aes(x = Index)) +
-  geom_line(aes(y = Close), alpha = 0.5) +
-  geom_line(aes(y = `50-day MA`), alpha = 0.7) +
-  geom_line(aes(y = `200-day MA`), alpha = 0.7) +
-  geom_point(data = df[df$Signal == 'Buy', ], aes(y = `50-day MA`), shape = 17, size = 4, color = 'green', alpha = 0.7) +
-  geom_point(data = df[df$Signal == 'Sell', ], aes(y = `50-day MA`), shape = 8, size = 4, color = 'red', alpha = 0.7) +
-  labs(title = 'Trend Following Strategy', x = 'Date', y = 'Price')
+# 绘制股票的收盘价和移动平均线
+p1 <- ggplot(df, aes(x = Index)) +
+  geom_line(aes(y = Close, color = "Close Price"), na.rm = TRUE) +
+  geom_line(aes(y = `50-day MA`, color = "50-day MA"), na.rm = TRUE) +
+  geom_line(aes(y = `200-day MA`, color = "200-day MA"), na.rm = TRUE) +
+  geom_point(aes(y = Close, color = Signal), shape = ifelse(df$Signal == "Buy", 1, ifelse(df$Signal == "Sell", 2, NA)), size = 3, na.rm = TRUE) +
+  scale_color_manual(values = c("Close Price" = "black", "50-day MA" = "blue", "200-day MA" = "red", "Buy" = "green", "Sell" = "red")) +
+  labs(title = "Trend Following Strategy Based on Moving Averages", y = "Price", color = "Legend") +
+  theme_minimal()
 
+# 绘制投资组合的价值随时间的变化
+p2 <- ggplot(df, aes(x = Index, y = PortfolioValue)) +
+  geom_line(color = "darkgreen", na.rm = TRUE) +
+  labs(title = "Portfolio Value Over Time", y = "Value") +
+  theme_minimal()
+
+# 显示图表
+print(p1)
+print(p2)
 # 计算累积收益
 initial_investment <- df$PortfolioValue[1]
 final_portfolio_value <- df$PortfolioValue[nrow(df)]
@@ -87,3 +97,4 @@ total_return <- (final_portfolio_value - initial_investment) / initial_investmen
 cat(paste("Initial Investment: $", sprintf("%.2f", initial_investment), "\n"))
 cat(paste("Final Portfolio Value: $", sprintf("%.2f", final_portfolio_value), "\n"))
 cat(paste("Total Return: ", sprintf("%.2f%%", total_return * 100), "\n"))
+
